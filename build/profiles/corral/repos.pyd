@@ -26,238 +26,238 @@
 repos += {
     "name": "os",
     "path": "os",
-    "url": "https://github.com/awesomenas/os.git",
+    "url": "https://github.com/cowsurgery/os.git",
     "branch": "freebsd11"
 }
 
 repos += {
     "name": "lib9p",
     "path": "os/contrib/lib9p",
-    "url": "https://github.com/awesomenas/lib9p.git",
+    "url": "https://github.com/cowsurgery/lib9p.git",
     "branch": "master"
 }
 
 repos += {
     "name": "ports",
     "path": "ports",
-    "url": "https://github.com/awesomenas/ports.git",
+    "url": "https://github.com/cowsurgery/ports.git",
     "branch": "branches/2017Q1"
 }
 
 repos += {
     "name": "gui",
     "path": "gui",
-    "url": "https://github.com/awesomenas/gui.git",
+    "url": "https://github.com/cowsurgery/gui.git",
     "branch": "master"
 }
 
 repos += {
     "name": "middleware",
     "path": "middleware",
-    "url": "https://github.com/awesomenas/middleware.git",
+    "url": "https://github.com/cowsurgery/middleware.git",
     "branch": "master"
 }
 
 repos += {
     "name": "dispatcher-client",
     "path": "dispatcher-client",
-    "url": "https://github.com/awesomenas/dispatcher-client.git",
+    "url": "https://github.com/cowsurgery/dispatcher-client.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-freenas.cli",
     "path": "py-freenas.cli",
-    "url": "https://github.com/awesomenas/cli.git",
+    "url": "https://github.com/cowsurgery/cli.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-freenas.utils",
     "path": "py-freenas.utils",
-    "url": "https://github.com/awesomenas/py-freenas-utils.git",
+    "url": "https://github.com/cowsurgery/py-freenas-utils.git",
     "branch": "master"
 }
 
 repos += {
     "name": "freenas-pkgtools",
     "path": "freenas-pkgtools",
-    "url": "https://github.com/awesomenas/freenas-pkgtools.git",
+    "url": "https://github.com/cowsurgery/freenas-pkgtools.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-libzfs",
     "path": "py-libzfs",
-    "url": "https://github.com/awesomenas/py-libzfs.git",
+    "url": "https://github.com/cowsurgery/py-libzfs.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-netif",
     "path": "py-netif",
-    "url": "https://github.com/awesomenas/py-netif.git",
+    "url": "https://github.com/cowsurgery/py-netif.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-cam",
     "path": "py-cam",
-    "url": "https://github.com/awesomenas/py-cam.git",
+    "url": "https://github.com/cowsurgery/py-cam.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-bsd",
     "path": "py-bsd",
-    "url": "https://github.com/awesomenas/py-bsd.git",
+    "url": "https://github.com/cowsurgery/py-bsd.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-smbconf",
     "path": "py-smbconf",
-    "url": "https://github.com/awesomenas/py-smbconf.git",
+    "url": "https://github.com/cowsurgery/py-smbconf.git",
     "branch": "master",
 }
 
 repos += {
     "name": "py-dhcp",
     "path": "py-dhcp",
-    "url": "https://github.com/awesomenas/py-dhcp.git",
+    "url": "https://github.com/cowsurgery/py-dhcp.git",
     "branch": "master",
 }
 
 repos += {
     "name": "py-pf",
     "path": "py-pf",
-    "url": "https://github.com/awesomenas/py-pf.git",
+    "url": "https://github.com/cowsurgery/py-pf.git",
     "branch": "master",
 }
 
 repos += {
     "name": "py-wbclient",
     "path": "py-wbclient",
-    "url": "https://github.com/awesomenas/py-wbclient.git",
+    "url": "https://github.com/cowsurgery/py-wbclient.git",
     "branch": "master",
 }
 
 repos += {
     "name": "py-krb5",
     "path": "py-krb5",
-    "url": "https://github.com/awesomenas/py-krb5.git",
+    "url": "https://github.com/cowsurgery/py-krb5.git",
     "branch": "master",
 }
 
 repos += {
     "name": "licenselib",
     "path": "licenselib",
-    "url": "https://github.com/awesomenas/licenselib.git",
+    "url": "https://github.com/cowsurgery/licenselib.git",
     "branch": "master"
 }
 
 repos += {
     "name": "sample",
     "path": "sample",
-    "url": "https://github.com/awesomenas/sample.git",
+    "url": "https://github.com/cowsurgery/sample.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-SMART",
     "path": "py-SMART",
-    "url": "https://github.com/awesomenas/py-SMART.git",
+    "url": "https://github.com/cowsurgery/py-SMART.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-ws4py",
     "path": "py-ws4py",
-    "url": "https://github.com/awesomenas/WebSocket-for-Python.git",
+    "url": "https://github.com/cowsurgery/WebSocket-for-Python.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-dockerhub",
     "path": "py-dockerhub",
-    "url": "https://github.com/awesomenas/py-dockerhub.git",
+    "url": "https://github.com/cowsurgery/py-dockerhub.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-msock",
     "path": "py-msock",
-    "url": "https://github.com/awesomenas/py-msock.git",
+    "url": "https://github.com/cowsurgery/py-msock.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-ipfs-api",
     "path": "py-ipfs-api",
-    "url": "https://github.com/awesomenas/py-ipfs-api",
+    "url": "https://github.com/cowsurgery/py-ipfs-api",
     "branch": "corral-build"
 }
 
 repos += {
     "name": "samba",
     "path": "samba",
-    "url": "https://github.com/awesomenas/corral-samba.git",
+    "url": "https://github.com/cowsurgery/corral-samba.git",
     "branch": "corral/master"
 }
 
 repos += {
     "name": "uefi-edk2",
     "path": "uefi-edk2",
-    "url": "https://github.com/awesomenas/uefi-edk2.git",
+    "url": "https://github.com/cowsurgery/uefi-edk2.git",
     "branch": "bhyve/UDK2014.SP1"
 }
 
 repos += {
     "name": "ds2",
     "path": "ds2",
-    "url": "https://github.com/jceel/ds2.git",
+    "url": "https://github.com/cowsurgery/ds2.git",
     "branch": "master"
 }
 
 repos += {
     "name": "pwatch",
     "path": "pwatch",
-    "url": "https://github.com/jceel/pwatch.git",
+    "url": "https://github.com/cowsurgery/pwatch.git",
     "branch": "master"
 }
 
 repos += {
     "name": "mDNSResponder",
     "path": "mDNSResponder",
-    "url": "https://github.com/awesomenas/mDNSResponder.git",
+    "url": "https://github.com/cowsurgery/mDNSResponder.git",
     "branch": "master"
 }
 
 repos += {
     "name": "grub2-pcbsd",
     "path": "grub2-pcbsd",
-    "url": "https://github.com/awesomenas/grub2-pcbsd.git",
+    "url": "https://github.com/cowsurgery/grub2-pcbsd.git",
     "branch": "master"
 }
 
 repos += {
     "name": "py-filewrap",
     "path": "py-filewrap",
-    "url": "https://github.com/awesomenas/py-filewrap.git",
+    "url": "https://github.com/cowsurgery/py-filewrap.git",
     "branch": "master",
 }
 
 repos += {
     "name": "freenas-migrate93",
     "path": "freenas-migrate93",
-    "url": "https://github.com/awesomenas/freenas-migrate93",
+    "url": "https://github.com/cowsurgery/freenas-migrate93",
     "branch": "master"
 }
 
 repos += {
     "name": "django1611",
     "path": "django1611",
-    "url": "https://github.com/awesomenas/django1611",
+    "url": "https://github.com/cowsurgery/django1611",
     "branch": "stable/1.6.11"
 }
 

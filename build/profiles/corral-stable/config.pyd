@@ -116,6 +116,7 @@ make_conf_build = {
     "WITHOUT_WIRELESS":             "yes",
     "WITHOUT_WPA_SUPPLICANT_EAPOL": "yes",
     "DEBUG_FLAGS":                  "-g",
+    "LDFLAGS":                      "-Wl,--allow-multiple-definition",
     "LOCAL_DIRS":                   "share/examples/ses tools/tools/cxgbtool tools/tools/cxgbetool"
 }
 

@@ -9,40 +9,220 @@ The steps below are the short summary version.
 ## Requirements
 
 * Operating System
-  * For building FreeNAS Corral, your build environment must be FreeBSD 11.0-RELEASE or later.
+  * FreeBSD 15.0-RELEASE or later (amd64). Earlier versions (11.0+) may work but are untested with this fork.
 
 * Free space
-  * For building on a ZFS based system, you must have ~140GB space free.
-  * For building on a UFS based system, you must have ~180GB space free.
+  * ZFS-based system: ~140GB free space (recommended).
+  * UFS-based system: ~180GB free space.
 
-* An amd64 capable processor.  32GB of memory, or an equal/greater amount
+* An amd64 capable processor. 32GB of memory, or an equal/greater amount
   of swap space, is also required.
 
-* An internet connection for downloading source and packages
+* An internet connection for downloading source and packages.
+
+## Setting Up a FreeBSD 15.0-RELEASE Builder
+
+This section walks through preparing a fresh FreeBSD 15.0-RELEASE (or higher)
+system as a build host for FreeNAS Corral.
+
+### 1. Base System Preparation
+
+Ensure your system is up to date:
+
+```sh
+freebsd-update fetch install
+pkg update && pkg upgrade -y
+```
+
+### 2. ZFS Setup (Recommended)
+
+The build system works best on ZFS. If your system is already on a ZFS root
+(the default for FreeBSD 15.0 installations), you are ready to go. Verify
+with:
+
+```sh
+zpool list
+zfs list
+```
+
+If you want the build to use ZFS for poudriere jails and snapshots (faster
+clean builds), export these before building:
+
+```sh
+export USE_ZFS=yes
+export ZPOOL=zroot          # your pool name
+export ZROOTFS=/corral      # ZFS filesystem prefix for build datasets
+```
+
+The build system will create datasets like `zroot/corral/jail` and use
+snapshots for clean jail rollback between port builds.
+
+### 3. Install Build Dependencies
+
+All commands must be run as `root`.
+
+The automated bootstrap target installs most dependencies:
+
+```sh
+make bootstrap-pkgs
+```
+
+This installs the following packages (see `Makefile` lines 113-125):
+
+| Package | Port | Purpose |
+|---------|------|---------|
+| `pxz` or `pixz` | `archivers/pxz` or `archivers/pixz` | Parallel XZ compression (see note below) |
+| `python3` | `lang/python3` | Build scripts (Python 3.11+ on FreeBSD 15) |
+| `python` | `lang/python` | Legacy Python (may need adjustment, see notes) |
+| `poudriere-devel` | `ports-mgmt/poudriere-devel` | Ports package builder |
+| `grub2-pcbsd` | `sysutils/grub2-pcbsd` | GRUB bootloader (BIOS) |
+| `grub2-efi` | `sysutils/grub2-efi` | GRUB bootloader (UEFI) |
+| `xorriso` | `sysutils/xorriso` | ISO image creation |
+| `git` | `devel/git` | Source code checkout |
+| `gmake` | `devel/gmake` | GNU Make |
+| `pigz` | `archivers/pigz` | Parallel gzip compression |
+
+Plus the Python `six` module installed via pip.
+
+#### Known Issues on FreeBSD 15.0
+
+- **`pxz` is unavailable.** The `archivers/pxz` port no longer exists. Use
+  `archivers/pixz` as a drop-in replacement, or rely on the base system `xz`
+  which now supports multi-threaded compression natively (`xz -T0`). You may
+  need to update `build/config/env.pyd` to set `XZ = "pixz"` or `XZ = "xz"`
+  and adjust `PXZ_ACCEL` accordingly.
+
+- **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.
+  The `lang/python` meta-port now points to Python 3.11. The `python -m
+  ensurepip` and `python -m pip install six` commands in bootstrap may fail if
+  `python` is not symlinked. Install `lang/python` (which is now a Python 3
+  meta-port) or manually run:
+  ```sh
+  python3 -m ensurepip
+  python3 -m pip install six
+  ```
+
+- **Python version.** The build system defaults to Python 3.6 in its make
+  config (`DEFAULT_VERSIONS+=python=3.6`). FreeBSD 15 ships Python 3.11 as
+  default. The ports `DEFAULT_VERSIONS` in the profile config (`config.pyd`)
+  will need to be updated to match your installed Python version.
+
+If `make bootstrap-pkgs` fails, install the packages manually:
+
+```sh
+pkg install -y archivers/pixz lang/python3 ports-mgmt/poudriere-devel \
+    sysutils/grub2-pcbsd sysutils/xorriso sysutils/grub2-efi \
+    devel/git devel/gmake archivers/pigz
+python3 -m ensurepip
+python3 -m pip install six
+```
+
+### 4. Verify Build Environment
+
+The build system includes a host validation script. Run it manually to check
+that all required tools are present:
+
+```sh
+make buildenv
+# or directly:
+python3 build/tools/check-host.py
+```
+
+This checks for: `git`, `pxz`/`pixz`, `python3`, `poudriere`, `grub-mkrescue`,
+`grub2-efi` (checks for `/usr/local/lib/grub/x86_64-efi/zfs.mod`), `xorriso`,
+and `gmake`.
+
+### 5. Clone Path Length Limitation
+
+The build system uses nullfs mounts and requires the full path to the build
+root to be **38 characters or fewer**. Clone into a short path:
+
+```sh
+# Good:
+git clone git@github.com:cowsurgery/corral-build.git /build/corral
+
+# Bad (too long):
+git clone git@github.com:cowsurgery/corral-build.git /home/user/projects/freenas/corral-build
+```
+
+### 6. Select a Build Profile
+
+Two profiles are available:
+
+| Profile | Branch | Use Case |
+|---------|--------|----------|
+| `corral` | master | Nightly / development builds |
+| `corral-stable` | stable | Stable release builds |
+
+Set your profile:
+
+```sh
+echo corral > build/profiles/profile-setting
+# or pass PROFILE= on each make invocation
+```
 
 ## Building FreeNAS
 
-Note: All these commands must be run as `root`.
+Note: All commands must be run as `root`.
 
 Install the dependencies:
 
     # make bootstrap-pkgs
 
-Download and assemble the source code:
+Download and assemble the source code (clones ~31 git repositories):
 
-    # make checkout PROFILE=profile_type
+    # make checkout PROFILE=corral
 
 Compile the source, then generate the .ISO:
 
-    # make release PROFILE=profile_type
+    # make release PROFILE=corral
 
 The valid profile types are "corral" and "corral-stable" (see
 the build/profiles directory) to build a nightly from the master branch or a stable build from the stable branch, respectively.
 Instead of specifying PROFILE=profile_type, you can also set the profile type in the file build/profiles/profile-setting
 (e.g. ```echo corral > build/profiles/profile-setting```).
 
-Once the build completes successfully, you'll have release bits in the _BE
-directory. :smile:
+Once the build completes successfully, you'll have release bits in the `_BE`
+directory.
+
+### Build Output
+
+The build produces artifacts in `_BE/`:
+
+```
+_BE/
+  objs/
+    world/          # Installed FreeBSD world
+    jail/           # Poudriere build jail
+    ports/          # Built port packages
+    packages/       # FreeNAS distribution packages
+    iso/            # ISO staging
+  release/          # Final ISO and checksums
+  os/               # FreeBSD source
+  middleware/       # FreeNAS middleware source
+  ports/            # Ports tree
+  gui/              # GUI source
+```
+
+### Build Phases
+
+The `make release` target runs these phases in order:
+
+1. **portsjail** - Creates a poudriere jail from FreeBSD source
+2. **ports** - Builds ~400 port packages via poudriere
+3. **world** - Compiles FreeBSD world and custom kernel (`FREENAS.amd64`)
+4. **packages** - Creates FreeNAS distribution packages (base-os, middleware, etc.)
+5. **images** - Generates bootable ISO with GRUB (BIOS + UEFI)
+
+### Troubleshooting
+
+- **Dangling mounts**: If a build crashes, nullfs mounts may be left behind.
+  Check with `mount | grep _BE` and clean up with `umount`.
+- **Disk space**: Monitor with `df -h` or `zfs list`. A full build needs
+  140-180GB.
+- **Parallel jobs**: The build auto-detects CPU count and sets
+  `MAKE_JOBS = 2 * ncpu + 1`. Override with `MAKE_JOBS=N` if needed.
+- **Poudriere failures**: Check logs in `_BE/objs/poudriere/data/logs/bulk/`.
 
 ## Updating an existing installation
 
@@ -58,3 +238,19 @@ used to push and install the new packages onto that host.  (Note previous
 comment about setting the profile).  PLEASE NOTE that this is an advanced
 development technique and may completely destroy your system if you don't know
 what you're doing.
+
+## Architecture Overview
+
+The build system uses a custom Python DSL (`.pyd` files) for configuration.
+Key configuration files:
+
+| File | Purpose |
+|------|---------|
+| `build/config/env.pyd` | Global environment variables and paths |
+| `build/profiles/corral/env.pyd` | Profile-specific overrides (FreeBSD version, product version) |
+| `build/profiles/corral/repos.pyd` | Git repositories to clone (~31 repos from cowsurgery org) |
+| `build/profiles/corral/config.pyd` | Kernel config, make.conf options, customize tasks |
+| `build/profiles/corral/ports-system.pyd` | System port packages to build |
+| `build/profiles/corral/ports-middleware.pyd` | FreeNAS middleware ports |
+| `build/profiles/corral/kernel/FREENAS.amd64` | Custom kernel configuration |
+| `build/config/templates/poudriere.conf` | Poudriere configuration template |

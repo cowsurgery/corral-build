@@ -107,9 +107,9 @@ The following issues have been fixed in the build system:
 
 - **C++17 lambda shadowing errors in clang/LLVM.** FreeBSD 11's bundled
   clang/LLVM source uses C++14 patterns (lambda parameters shadowing
-  captured variables) rejected by C++17. Fixed by adding
-  `CXXFLAGS+=-std=c++14` to `make_conf_build`. Uses `+=` to append
-  rather than override default flags. (corral-build#5, corral-build#6)
+  captured variables) rejected by C++17. Fixed by removing `&CGF` from
+  lambda capture lists in `CGOpenMPRuntime.cpp` where it was shadowed
+  by a parameter of the same name. (os#2)
 
 #### Remaining Notes
 

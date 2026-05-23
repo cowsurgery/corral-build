@@ -117,6 +117,7 @@ make_conf_build = {
     "WITHOUT_WPA_SUPPLICANT_EAPOL": "yes",
     "WITHOUT_GROFF":                "yes",
     "WITHOUT_LINT":                 "yes",
+    "LINT":                         "nolint",
     "DEBUG_FLAGS":                  "-g",
     "CFLAGS+":                      " -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=incompatible-function-pointer-types",
     "LDFLAGS+":                     " -Wl,--allow-multiple-definition",

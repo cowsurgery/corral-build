@@ -71,9 +71,9 @@ This installs the following packages (see `Makefile` lines 113-125):
 
 | Package | Port | Purpose |
 |---------|------|---------|
-| `pxz` or `pixz` | `archivers/pxz` or `archivers/pixz` | Parallel XZ compression (see note below) |
+| `pixz` | `archivers/pixz` | Parallel XZ compression |
 | `python3` | `lang/python3` | Build scripts (Python 3.11+ on FreeBSD 15) |
-| `python` | `lang/python` | Legacy Python (may need adjustment, see notes) |
+| `python` | `lang/python` | Python meta-port (points to Python 3 on FreeBSD 15) |
 | `poudriere-devel` | `ports-mgmt/poudriere-devel` | Ports package builder |
 | `grub2-pcbsd` | `sysutils/grub2-pcbsd` | GRUB bootloader (BIOS) |
 | `grub2-efi` | `sysutils/grub2-efi` | GRUB bootloader (UEFI) |
@@ -84,28 +84,37 @@ This installs the following packages (see `Makefile` lines 113-125):
 
 Plus the Python `six` module installed via pip.
 
-#### Known Issues on FreeBSD 15.0
+#### Resolved Issues for FreeBSD 15.0
 
-- **`pxz` is unavailable.** The `archivers/pxz` port no longer exists. Use
-  `archivers/pixz` as a drop-in replacement, or rely on the base system `xz`
-  which now supports multi-threaded compression natively (`xz -T0`). You may
-  need to update `build/config/env.pyd` to set `XZ = "pixz"` or `XZ = "xz"`
-  and adjust `PXZ_ACCEL` accordingly.
+The following issues have been fixed in the build system:
+
+- **`pxz` replaced with `pixz`.** The `archivers/pxz` port no longer exists
+  on FreeBSD 15. The build system now uses `archivers/pixz` as a drop-in
+  replacement. (corral-build#2, env.pyd `XZ` and `PXZ_ACCEL` updated)
+
+- **Duplicate symbol linker errors.** FreeBSD 11 source uses tentative
+  definitions (globals in headers) that FreeBSD 15's `lld` linker rejects.
+  Fixed by adding `LDFLAGS=-Wl,--allow-multiple-definition` to
+  `make_conf_build`. (corral-build#3)
+
+- **`yydebug` undefined symbol.** FreeBSD 15's `byacc` no longer generates
+  a `yydebug` global variable by default. Fixed by adding an explicit
+  definition in `usr.bin/localedef/parser.y`. (os#1)
+
+- **groff C++17 incompatibility.** FreeBSD 15's clang defaults to C++17,
+  which forbids the `register` storage class specifier used in groff. Fixed
+  by adding `WITHOUT_GROFF=yes` to `make_conf_build`. (corral-build#4)
+
+#### Remaining Notes
 
 - **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.
-  The `lang/python` meta-port now points to Python 3.11. The `python -m
-  ensurepip` and `python -m pip install six` commands in bootstrap may fail if
-  `python` is not symlinked. Install `lang/python` (which is now a Python 3
-  meta-port) or manually run:
-  ```sh
-  python3 -m ensurepip
-  python3 -m pip install six
-  ```
+  The `lang/python` meta-port now points to Python 3.11. The bootstrap step
+  `make bootstrap-pkgs` works as-is because `python` resolves to `python3`.
 
-- **Python version.** The build system defaults to Python 3.6 in its make
-  config (`DEFAULT_VERSIONS+=python=3.6`). FreeBSD 15 ships Python 3.11 as
-  default. The ports `DEFAULT_VERSIONS` in the profile config (`config.pyd`)
-  will need to be updated to match your installed Python version.
+- **Python version for ports.** The build system sets
+  `DEFAULT_VERSIONS+=python=3.6` in the ports config (`config.pyd`). This
+  applies inside the poudriere jail which uses the 2017Q1 ports tree where
+  Python 3.6 is available, so it should not need changing for the host.
 
 If `make bootstrap-pkgs` fails, install the packages manually:
 

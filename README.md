@@ -129,6 +129,10 @@ The following issues have been fixed in the build system:
   header and a weak alias from `_elf_aux_info` to `elf_aux_info`.
   (os#8, os#9)
 
+- **`lint` tool removed from FreeBSD.** The `lint` program no longer
+  exists in FreeBSD 15. Added `WITHOUT_LINT=yes` to skip building
+  `xlint` during buildworld. (corral-build#9)
+
 #### Remaining Notes
 
 - **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.

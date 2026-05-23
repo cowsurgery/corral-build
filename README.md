@@ -130,8 +130,14 @@ The following issues have been fixed in the build system:
   (os#8, os#9)
 
 - **`lint` tool removed from FreeBSD.** The `lint` program no longer
-  exists in FreeBSD 15. Added `WITHOUT_LINT=yes` to skip building
-  `xlint` during buildworld. (corral-build#9)
+  exists in FreeBSD 15. Added `WITHOUT_LINT=yes` and `LINT=nolint` to
+  skip building `xlint` during buildworld. (corral-build#9, corral-build#10)
+
+- **`config` bus error from duplicate globals.** `config.h` defined
+  global variables without `extern`, causing duplicate definitions.
+  With `--allow-multiple-definition`, the linker picked arbitrary
+  copies causing bus errors at runtime. Fixed by proper `extern`
+  declarations in the header. (os#10)
 
 #### Remaining Notes
 

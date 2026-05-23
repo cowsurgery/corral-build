@@ -117,6 +117,12 @@ The following issues have been fixed in the build system:
   all magic files (commands, images, python, windows).
   (os#3, os#4, os#5, os#6, os#7)
 
+- **Strict C type warnings promoted to errors.** FreeBSD 15's clang
+  promotes `-Wincompatible-pointer-types`, `-Wint-conversion`, and
+  `-Wincompatible-function-pointer-types` to errors. Old GNU code
+  (binutils ld) triggers these with `-Werror`. Added `-Wno-error=`
+  flags via `CFLAGS+=` in make_conf_build. (corral-build#8)
+
 #### Remaining Notes
 
 - **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.

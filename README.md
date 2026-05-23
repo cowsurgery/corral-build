@@ -105,6 +105,11 @@ The following issues have been fixed in the build system:
   which forbids the `register` storage class specifier used in groff. Fixed
   by adding `WITHOUT_GROFF=yes` to `make_conf_build`. (corral-build#4)
 
+- **C++17 lambda shadowing errors in clang/LLVM.** FreeBSD 11's bundled
+  clang/LLVM source uses C++14 patterns (lambda parameters shadowing
+  captured variables) rejected by C++17. Fixed by adding
+  `CXXFLAGS=-std=c++14` to `make_conf_build`. (corral-build#5)
+
 #### Remaining Notes
 
 - **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.

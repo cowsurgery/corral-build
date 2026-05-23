@@ -117,8 +117,8 @@ make_conf_build = {
     "WITHOUT_WPA_SUPPLICANT_EAPOL": "yes",
     "WITHOUT_GROFF":                "yes",
     "DEBUG_FLAGS":                  "-g",
-    "CXXFLAGS":                     "-std=c++14",
-    "LDFLAGS":                      "-Wl,--allow-multiple-definition",
+    "CXXFLAGS+":                    " -std=c++14",
+    "LDFLAGS+":                     " -Wl,--allow-multiple-definition",
     "LOCAL_DIRS":                   "share/examples/ses tools/tools/cxgbtool tools/tools/cxgbetool"
 }
 

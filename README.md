@@ -112,9 +112,10 @@ The following issues have been fixed in the build system:
   by a parameter of the same name. (os#2)
 
 - **`mkmagic` regex failures.** FreeBSD 15's regex library doesn't support
-  non-POSIX escapes (`\s`, `\w`, `\t`, `\r`, `\n`) in regex context.
-  Replaced with POSIX equivalents (`[[:space:]]`, `[[:alnum:]_]`) across
-  all magic files (commands, images, python, windows). (os#3, os#4, os#5, os#6)
+  non-POSIX escapes (`\s`, `\w`, `\t`, `\r`, `\n`) or GNU extensions
+  (`` \` ``) in regex context. Replaced with POSIX equivalents across
+  all magic files (commands, images, python, windows).
+  (os#3, os#4, os#5, os#6, os#7)
 
 #### Remaining Notes
 

@@ -111,9 +111,10 @@ The following issues have been fixed in the build system:
   lambda capture lists in `CGOpenMPRuntime.cpp` where it was shadowed
   by a parameter of the same name. (os#2)
 
-- **`mkmagic` regex failure.** FreeBSD 15's regex library doesn't support
-  `\s` (PCRE shorthand) in POSIX regex context. Replaced with
-  `[[:space:]]` in the magic file pattern. (os#3)
+- **`mkmagic` regex failures.** FreeBSD 15's regex library doesn't support
+  PCRE shorthands (`\s`, `\w`) in POSIX regex context. Replaced with
+  POSIX equivalents (`[[:space:]]`, `[[:alnum:]_]`) across all magic
+  files (commands, images, python). (os#3, os#4)
 
 #### Remaining Notes
 

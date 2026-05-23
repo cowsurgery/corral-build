@@ -123,6 +123,10 @@ The following issues have been fixed in the build system:
   (binutils ld) triggers these with `-Werror`. Added `-Wno-error=`
   flags via `CFLAGS+=` in make_conf_build. (corral-build#8)
 
+- **Missing `sys/auxv.h` header.** FreeBSD 15's host `crunchgen` generates
+  `rescue.c` with `#include <sys/auxv.h>` which doesn't exist in the
+  FreeBSD 11 source tree. Added a minimal backported header. (os#8)
+
 #### Remaining Notes
 
 - **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.

@@ -120,7 +120,6 @@ make_conf_build = {
     "LINT":                         "nolint",
     "DEBUG_FLAGS":                  "-g",
     "CFLAGS+":                      " -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=incompatible-function-pointer-types",
-    "LDFLAGS+":                     " -Wl,--allow-multiple-definition",
     "LOCAL_DIRS":                   "share/examples/ses tools/tools/cxgbtool tools/tools/cxgbetool"
 }
 

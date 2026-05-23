@@ -111,6 +111,10 @@ The following issues have been fixed in the build system:
   lambda capture lists in `CGOpenMPRuntime.cpp` where it was shadowed
   by a parameter of the same name. (os#2)
 
+- **`mkmagic` regex failure.** FreeBSD 15's regex library doesn't support
+  `\s` (PCRE shorthand) in POSIX regex context. Replaced with
+  `[[:space:]]` in the magic file pattern. (os#3)
+
 #### Remaining Notes
 
 - **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.

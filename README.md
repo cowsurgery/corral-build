@@ -90,7 +90,7 @@ The following issues have been fixed across three repositories
 (`corral-build`, `os`, and `ports`) to allow building FreeBSD 11
 source on a FreeBSD 15.0 host.
 
-**Build System Fixes (corral-build repo, 17 PRs):**
+**Build System Fixes (corral-build repo, 18 PRs):**
 
 - `archivers/pxz` replaced with `archivers/pixz` (#2)
 - `WITHOUT_GROFF=yes` - C++17 forbids `register` keyword (#4)
@@ -110,6 +110,9 @@ source on a FreeBSD 15.0 host.
 - Disabled TPM in `security/gnutls` (trousers tarball unavailable),
   dropped `clog` (rcs build failure), dropped `consul` (Go 1.4
   runtime crash in FreeBSD 11 jail) (#17)
+- Install patched `grub2-pcbsd` with PLT32 relocation support from
+  GitHub release during bootstrap, replacing the broken FreeBSD pkg
+  version (#18)
 
 **FreeBSD 11 Source Fixes (os repo, 15 PRs):**
 
@@ -127,56 +130,41 @@ source on a FreeBSD 15.0 host.
 **Ports Tree Fixes (ports repo, 1 PR):**
 
 - Backported upstream GRUB commit 842c390 to add `R_X86_64_PLT32`
-  relocation support to `grub2-pcbsd` port (#1). This fixes ISO
-  creation when grub is built from the cowsurgery ports tree.
+  relocation support to `grub2-pcbsd` port (#1). This fixes
+  `grub-mkimage` when building EFI boot images with modules compiled
+  by FreeBSD 15's clang.
 
-#### Current Build Status
+#### Build Status
 
-The following phases complete successfully:
+`make release PROFILE=corral` **completes successfully** and produces
+a bootable ISO. All phases pass:
 
-- `make bootstrap-pkgs` - installs host dependencies via `pkg`
+- `make bootstrap-pkgs` - installs host dependencies via `pkg`, then
+  overlays patched `grub2-pcbsd` from GitHub release
 - `make checkout` - clones all 31+ source repositories
 - `buildworld` - compiles FreeBSD 11 world (~27 min)
 - `buildkernel` - compiles FreeNAS kernel + debug kernel
 - `installworld` - installs into poudriere jail
-- Poudriere jail setup and port tree merging
-- Poudriere ports build - **all configured ports build successfully**
+- Poudriere ports build - all configured ports build (~1 hour)
 - World, kernel, and package installation into final image
-- UFS root image creation
+- ISO creation via `grub-mkrescue` (BIOS + UEFI boot)
 
-#### Current Blocker: ISO Creation (grub-mkrescue)
+Output: `_BE/release/FreeNAS-Corral-MASTER-<timestamp>/x64/*.iso`
 
-The final step, `grub-mkrescue`, fails with:
+#### GRUB PLT32 Fix
 
-```
-grub-mkrescue: error: relocation 0x4 is not implemented yet.
-```
+The `grub2-pcbsd` package from FreeBSD's pkg repository is broken on
+FreeBSD 15 - `grub-mkimage` fails with `relocation 0x4 is not
+implemented yet` when creating EFI boot images. This is because
+FreeBSD 15's clang generates `R_X86_64_PLT32` relocations in the GRUB
+modules, but GRUB 2.02's `grub-mkimage` only handles types 1-3.
 
-**Root cause:** `make bootstrap-pkgs` installs `grub2-pcbsd` from the
-FreeBSD 15 package repository via `pkg install`. This package was
-compiled with FreeBSD 15's clang which generates `R_X86_64_PLT32`
-relocations in the GRUB EFI modules, but the GRUB 2.02 `grub-mkimage`
-tool doesn't handle this relocation type. The upstream GRUB fix (commit
-842c390) was never added to the FreeBSD port.
-
-The cowsurgery/ports tree has the fix (ports#1), and the grub built
-inside the poudriere jail works correctly, but that binary targets
-FreeBSD 11 and cannot run on the FreeBSD 15 host.
-
-**Options under consideration:**
-
-1. **Chroot approach** - Modify `create-iso.py` to run `grub-mkrescue`
-   from the built world via `chroot` into `WORLD_DESTDIR`. No extra
-   host packages needed, uses the already-built patched grub.
-
-2. **Rebuild grub on the host** - Build `grub2-pcbsd` from source on
-   the host using the patched cowsurgery/ports tree. Requires
-   additional build dependencies on the host (`bison`, `flex`,
-   `autoconf`, `automake`, etc.).
-
-3. **File upstream FreeBSD bug** - Submit the PLT32 patch to the
-   FreeBSD ports tree so `pkg install grub2-pcbsd` works out of the
-   box on FreeBSD 15. Long-term fix but doesn't help immediately.
+**Fix applied:** `make bootstrap-pkgs` installs the standard package
+from `pkg`, then overlays a patched build from a GitHub release on the
+cowsurgery/corral-build repo (#18). The patched build includes upstream
+GRUB commit 842c390 which treats `R_X86_64_PLT32` as `R_X86_64_PC32`.
+The same fix is in the cowsurgery/ports tree (ports#1) for the
+poudriere-built grub inside the jail.
 
 #### Notes
 

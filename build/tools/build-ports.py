@@ -159,9 +159,14 @@ def merge_port_trees():
                 else:
                     sh('cp -l ${p} ${PORTS_OVERLAY}/${portpath}')
             else:
-                sh('rm -rf ${PORTS_OVERLAY}/${portpath}')
-                sh('mkdir -p ${PORTS_OVERLAY}/${portpath}')
-                sh('cp -lr ${p}/ ${PORTS_OVERLAY}/${portpath}')
+                if os.path.isdir(p):
+                    sh('rm -rf ${PORTS_OVERLAY}/${portpath}')
+                    sh('mkdir -p ${PORTS_OVERLAY}/${portpath}')
+                    sh('cp -lr ${p}/ ${PORTS_OVERLAY}/${portpath}')
+                else:
+                    portdir = os.path.dirname(portpath)
+                    sh('mkdir -p ${PORTS_OVERLAY}/${portdir}')
+                    sh('cp -lf ${p} ${PORTS_OVERLAY}/${portpath}')
 
         if os.path.exists(uids):
             sh('rm -f ${PORTS_OVERLAY}/UIDs')

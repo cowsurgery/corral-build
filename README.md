@@ -86,58 +86,33 @@ Plus the Python `six` module installed via pip.
 
 #### Resolved Issues for FreeBSD 15.0
 
-The following issues have been fixed in the build system:
+The following toolchain and compatibility issues have been fixed across
+the `corral-build` and `os` repositories to allow building FreeBSD 11
+source on a FreeBSD 15.0 host:
 
-- **`pxz` replaced with `pixz`.** The `archivers/pxz` port no longer exists
-  on FreeBSD 15. The build system now uses `archivers/pixz` as a drop-in
-  replacement. (corral-build#2, env.pyd `XZ` and `PXZ_ACCEL` updated)
+**Bootstrap & Package Fixes (corral-build repo):**
 
-- **Duplicate symbol linker errors.** FreeBSD 11 source uses tentative
-  definitions (globals in headers) that FreeBSD 15's `lld` linker rejects.
-  Fixed by adding `LDFLAGS=-Wl,--allow-multiple-definition` to
-  `make_conf_build`. (corral-build#3)
+- `archivers/pxz` replaced with `archivers/pixz` (#2)
+- `WITHOUT_GROFF=yes` added - C++17 forbids `register` keyword (#4)
+- `WITHOUT_LINT=yes` and `LINT=nolint` added - lint removed from FreeBSD (#9, #10)
+- `CFLAGS+=-Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+  -Wno-error=incompatible-function-pointer-types` - clang 18+ promotes
+  these to errors (#8)
+- `CFLAGS+=-fcommon` - restores pre-C11 tentative definition behavior
+  for FreeBSD 11 source that defines globals in headers (#13)
 
-- **`yydebug` undefined symbol.** FreeBSD 15's `byacc` no longer generates
-  a `yydebug` global variable by default. Fixed by adding an explicit
-  definition in `usr.bin/localedef/parser.y`. (os#1)
+**FreeBSD 11 Source Fixes (os repo):**
 
-- **groff C++17 incompatibility.** FreeBSD 15's clang defaults to C++17,
-  which forbids the `register` storage class specifier used in groff. Fixed
-  by adding `WITHOUT_GROFF=yes` to `make_conf_build`. (corral-build#4)
-
-- **C++17 lambda shadowing errors in clang/LLVM.** FreeBSD 11's bundled
-  clang/LLVM source uses C++14 patterns (lambda parameters shadowing
-  captured variables) rejected by C++17. Fixed by removing `&CGF` from
-  lambda capture lists in `CGOpenMPRuntime.cpp` where it was shadowed
-  by a parameter of the same name. (os#2)
-
-- **`mkmagic` regex failures.** FreeBSD 15's regex library doesn't support
-  non-POSIX escapes (`\s`, `\w`, `\t`, `\r`, `\n`) or GNU extensions
-  (`` \` ``) in regex context. Replaced with POSIX equivalents across
-  all magic files (commands, images, python, windows).
-  (os#3, os#4, os#5, os#6, os#7)
-
-- **Strict C type warnings promoted to errors.** FreeBSD 15's clang
-  promotes `-Wincompatible-pointer-types`, `-Wint-conversion`, and
-  `-Wincompatible-function-pointer-types` to errors. Old GNU code
-  (binutils ld) triggers these with `-Werror`. Added `-Wno-error=`
-  flags via `CFLAGS+=` in make_conf_build. (corral-build#8)
-
-- **Missing `sys/auxv.h` and `elf_aux_info()`.** FreeBSD 15's host
-  `crunchgen` generates `rescue.c` referencing `sys/auxv.h` and
-  `elf_aux_info()`, neither of which exist in FreeBSD 11. Added the
-  header and a weak alias from `_elf_aux_info` to `elf_aux_info`.
-  (os#8, os#9)
-
-- **`lint` tool removed from FreeBSD.** The `lint` program no longer
-  exists in FreeBSD 15. Added `WITHOUT_LINT=yes` and `LINT=nolint` to
-  skip building `xlint` during buildworld. (corral-build#9, corral-build#10)
-
-- **`config` bus error from duplicate globals.** `config.h` defined
-  global variables without `extern`, causing duplicate definitions.
-  With `--allow-multiple-definition`, the linker picked arbitrary
-  copies causing bus errors at runtime. Fixed by proper `extern`
-  declarations in the header. (os#10)
+- `yydebug` undefined in `localedef` - FreeBSD 15's byacc change (#1)
+- Lambda parameter shadowing in `CGOpenMPRuntime.cpp` - C++17 rule (#2)
+- Non-POSIX regex in magic files (`\s`, `\w`, `\t`, `\r\n`, `` \` ``)
+  replaced with POSIX equivalents (#3-#7)
+- Missing `sys/auxv.h` header and `elf_aux_info()` function backported
+  for FreeBSD 15 host `crunchgen` compatibility (#8, #9)
+- `config.h` globals fixed with proper `extern` declarations and named
+  struct tags to prevent bus errors (#10-#13)
+- Duplicate `yylloc` in `dtc` lexer/parser fixed (#14)
+- `[vdso]` filtered from `ldd` output in `installworld` (#15)
 
 #### Remaining Notes
 
@@ -149,6 +124,12 @@ The following issues have been fixed in the build system:
   `DEFAULT_VERSIONS+=python=3.6` in the ports config (`config.pyd`). This
   applies inside the poudriere jail which uses the 2017Q1 ports tree where
   Python 3.6 is available, so it should not need changing for the host.
+
+- **Jail support required.** The build creates poudriere jails to compile
+  ports. Ensure your FreeBSD 15 host supports `jail(8)` - some
+  environments (cloud VMs, containers) may restrict `jail_attach`. If
+  you see `jail: jail_attach: Operation not permitted`, check that your
+  host allows jail creation and attachment.
 
 If `make bootstrap-pkgs` fails, install the packages manually:
 
@@ -251,11 +232,13 @@ _BE/
 
 The `make release` target runs these phases in order:
 
-1. **portsjail** - Creates a poudriere jail from FreeBSD source
-2. **ports** - Builds ~400 port packages via poudriere
-3. **world** - Compiles FreeBSD world and custom kernel (`FREENAS.amd64`)
-4. **packages** - Creates FreeNAS distribution packages (base-os, middleware, etc.)
-5. **images** - Generates bootable ISO with GRUB (BIOS + UEFI)
+1. **buildworld** - Compiles FreeBSD 11 world (~27 min, ~350K lines of log)
+2. **buildkernel** - Compiles FreeNAS kernel and debug kernel (`FREENAS.amd64`)
+3. **portsjail** - Installs world into poudriere jail, runs `ldconfig`
+4. **ports** - Builds ~400 port packages via poudriere
+5. **world** - Installs world, kernel, ports into final image
+6. **packages** - Creates FreeNAS distribution packages (base-os, middleware, etc.)
+7. **images** - Generates bootable ISO with GRUB (BIOS + UEFI)
 
 ### Troubleshooting
 

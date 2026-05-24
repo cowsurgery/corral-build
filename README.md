@@ -86,26 +86,32 @@ Plus the Python `six` module installed via pip.
 
 #### Resolved Issues for FreeBSD 15.0
 
-The following toolchain and compatibility issues have been fixed across
-the `corral-build` and `os` repositories to allow building FreeBSD 11
-source on a FreeBSD 15.0 host:
+The following issues have been fixed across three repositories
+(`corral-build`, `os`, and `ports`) to allow building FreeBSD 11
+source on a FreeBSD 15.0 host.
 
-**Bootstrap & Package Fixes (corral-build repo):**
+**Build System Fixes (corral-build repo, 17 PRs):**
 
 - `archivers/pxz` replaced with `archivers/pixz` (#2)
-- `WITHOUT_GROFF=yes` added - C++17 forbids `register` keyword (#4)
-- `WITHOUT_LINT=yes` and `LINT=nolint` added - lint removed from FreeBSD (#9, #10)
-- `CFLAGS+=-Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+- `WITHOUT_GROFF=yes` - C++17 forbids `register` keyword (#4)
+- `WITHOUT_LINT=yes` and `LINT=nolint` - lint removed from FreeBSD (#9, #10)
+- `CFLAGS+=-Wno-error=incompatible-pointer-types
+  -Wno-error=int-conversion
   -Wno-error=incompatible-function-pointer-types` - clang 18+ promotes
   these to errors (#8)
-- `CFLAGS+=-fcommon` - restores pre-C11 tentative definition behavior
+- `CFLAGS+=-fcommon` - restores pre-C11 tentative definition merging
   for FreeBSD 11 source that defines globals in headers (#13)
 - Close inherited directory FDs at build startup to prevent
   `jail_attach: Operation not permitted` from FreeBSD-SA-21:05
   security hardening (#14)
 - Handle files (not just directories) in port tree merge glob (#15)
+- Dropped proprietary RAID tools with dead download URLs:
+  `arcconf`, `tw_cli`, `hptcli`, `megacli` (#16)
+- Disabled TPM in `security/gnutls` (trousers tarball unavailable),
+  dropped `clog` (rcs build failure), dropped `consul` (Go 1.4
+  runtime crash in FreeBSD 11 jail) (#17)
 
-**FreeBSD 11 Source Fixes (os repo):**
+**FreeBSD 11 Source Fixes (os repo, 15 PRs):**
 
 - `yydebug` undefined in `localedef` - FreeBSD 15's byacc change (#1)
 - Lambda parameter shadowing in `CGOpenMPRuntime.cpp` - C++17 rule (#2)
@@ -118,31 +124,83 @@ source on a FreeBSD 15.0 host:
 - Duplicate `yylloc` in `dtc` lexer/parser fixed (#14)
 - `[vdso]` filtered from `ldd` output in `installworld` (#15)
 
-#### Remaining Notes
+**Ports Tree Fixes (ports repo, 1 PR):**
 
-- **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships Python 3.
-  The `lang/python` meta-port now points to Python 3.11. The bootstrap step
-  `make bootstrap-pkgs` works as-is because `python` resolves to `python3`.
+- Backported upstream GRUB commit 842c390 to add `R_X86_64_PLT32`
+  relocation support to `grub2-pcbsd` port (#1). This fixes ISO
+  creation when grub is built from the cowsurgery ports tree.
 
-- **Python version for ports.** The build system sets
-  `DEFAULT_VERSIONS+=python=3.6` in the ports config (`config.pyd`). This
-  applies inside the poudriere jail which uses the 2017Q1 ports tree where
-  Python 3.6 is available, so it should not need changing for the host.
+#### Current Build Status
 
-- **Jail support required.** The build creates poudriere jails to compile
-  ports. The build system automatically closes inherited directory file
-  descriptors that would trigger FreeBSD-SA-21:05 security restrictions
-  on `jail_attach`. If you still see `jail: jail_attach: Operation not
-  permitted`, ensure your host supports `jail(8)` and is not itself
+The following phases complete successfully:
+
+- `make bootstrap-pkgs` - installs host dependencies via `pkg`
+- `make checkout` - clones all 31+ source repositories
+- `buildworld` - compiles FreeBSD 11 world (~27 min)
+- `buildkernel` - compiles FreeNAS kernel + debug kernel
+- `installworld` - installs into poudriere jail
+- Poudriere jail setup and port tree merging
+- Poudriere ports build - **all configured ports build successfully**
+- World, kernel, and package installation into final image
+- UFS root image creation
+
+#### Current Blocker: ISO Creation (grub-mkrescue)
+
+The final step, `grub-mkrescue`, fails with:
+
+```
+grub-mkrescue: error: relocation 0x4 is not implemented yet.
+```
+
+**Root cause:** `make bootstrap-pkgs` installs `grub2-pcbsd` from the
+FreeBSD 15 package repository via `pkg install`. This package was
+compiled with FreeBSD 15's clang which generates `R_X86_64_PLT32`
+relocations in the GRUB EFI modules, but the GRUB 2.02 `grub-mkimage`
+tool doesn't handle this relocation type. The upstream GRUB fix (commit
+842c390) was never added to the FreeBSD port.
+
+The cowsurgery/ports tree has the fix (ports#1), and the grub built
+inside the poudriere jail works correctly, but that binary targets
+FreeBSD 11 and cannot run on the FreeBSD 15 host.
+
+**Options under consideration:**
+
+1. **Chroot approach** - Modify `create-iso.py` to run `grub-mkrescue`
+   from the built world via `chroot` into `WORLD_DESTDIR`. No extra
+   host packages needed, uses the already-built patched grub.
+
+2. **Rebuild grub on the host** - Build `grub2-pcbsd` from source on
+   the host using the patched cowsurgery/ports tree. Requires
+   additional build dependencies on the host (`bison`, `flex`,
+   `autoconf`, `automake`, etc.).
+
+3. **File upstream FreeBSD bug** - Submit the PLT32 patch to the
+   FreeBSD ports tree so `pkg install grub2-pcbsd` works out of the
+   box on FreeBSD 15. Long-term fix but doesn't help immediately.
+
+#### Notes
+
+- **`lang/python` (Python 2) is removed.** FreeBSD 15 only ships
+  Python 3. The `lang/python` meta-port now points to Python 3.11.
+  `make bootstrap-pkgs` works as-is.
+
+- **Python version for ports.** `DEFAULT_VERSIONS+=python=3.6` in
+  `config.pyd` applies inside the poudriere jail (2017Q1 ports tree
+  where Python 3.6 is available), not on the host.
+
+- **Jail support required.** The build creates poudriere jails. The
+  build system automatically closes inherited directory FDs that would
+  trigger FreeBSD-SA-21:05 restrictions. If you still see
+  `jail_attach: Operation not permitted`, ensure your host is not
   running inside a restricted jail or container.
 
-- **Port build status.** 401 of 415 ports build successfully (96.6%).
-  Known failures:
-  - **Fetch failures** (dead download URLs): `hptcli`, `megacli`, `tw_cli`,
-    `arcconf` (proprietary RAID tools), `trousers` (TPM library)
-  - **Build failures**: `lang/go14` (Go 1.4 bootstrap), `devel/rcs`
-  - **Skipped** (depend on above): `consul`, `go`, `clog`, `gnutls`,
-    `samba45`, `py-smbconf`, `py-wbclient`
+- **Dropped ports.** The following were removed from the port lists:
+  - `arcconf`, `tw_cli`, `hptcli`, `megacli` - proprietary RAID tools
+    with dead vendor download URLs
+  - `consul` - depends on `lang/go14` which crashes in FreeBSD 11 jail
+  - `clog` - depends on `devel/rcs` which fails to build
+  - `trousers` TPM dependency disabled in `gnutls` - tarball no longer
+    available from SourceForge
 
 If `make bootstrap-pkgs` fails, install the packages manually:
 

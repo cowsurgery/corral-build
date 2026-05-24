@@ -86,7 +86,8 @@ ports += {
     "options": ["OPTIONS_FILE_UNSET+=X11"]
 }
 ports += "net/vblade"
-ports += "net-mgmt/clog"
+# Dropped: depends on devel/rcs which fails to build
+# ports += "net-mgmt/clog"
 ports += "net-mgmt/netdata"
 ports += "ftp/lftp"
 ports += {
@@ -295,7 +296,10 @@ ports += {
     "name": "dns/samba-nsupdate",
     "options": ["OPTIONS_FILE_SET+=IPV6"]
 }
-ports += "security/gnutls"
+ports += {
+    "name": "security/gnutls",
+    "options": ["OPTIONS_FILE_UNSET+=TPM"]
+}
 ports += {
     "name": "net/samba45",
     "options": [
@@ -349,7 +353,8 @@ ports += "sysutils/grub2-bhyve"
 # ports += "sysutils/megacli"
 ports += "sysutils/beadm"
 ports += "sysutils/mcelog"
-ports += "sysutils/consul"
+# Dropped: depends on lang/go14 which crashes at runtime in FreeBSD 11 jail
+# ports += "sysutils/consul"
 
 # This is a silly for fun thing
 # feel free to remove it if need be

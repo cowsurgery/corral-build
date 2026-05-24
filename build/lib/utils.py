@@ -99,8 +99,27 @@ def chroot(root, *args, **kwargs):
     return sh("chroot ${root} /bin/sh -c '${cmd}'", **kwargs)
 
 
+def close_directory_fds():
+    """Close inherited directory file descriptors (fd >= 3).
+
+    FreeBSD's jail_attach() rejects processes with open directory FDs
+    (security hardening from FreeBSD-SA-21:05). Build environments like
+    Claude Code or IDEs may hold directory FDs open without O_CLOEXEC,
+    which get inherited and prevent jail operations needed by poudriere.
+    """
+    import stat
+    for fd in range(3, 64):
+        try:
+            st = os.fstat(fd)
+            if stat.S_ISDIR(st.st_mode):
+                os.close(fd)
+        except OSError:
+            pass
+
+
 def setup_env():
     signal.signal(signal.SIGINT, interrupt)
+    close_directory_fds()
     dsl = load_file('${BUILD_CONFIG}/env.pyd', os.environ)
     for k, v in dsl.items():
         if k.isupper():

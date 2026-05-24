@@ -103,6 +103,7 @@ source on a FreeBSD 15.0 host:
 - Close inherited directory FDs at build startup to prevent
   `jail_attach: Operation not permitted` from FreeBSD-SA-21:05
   security hardening (#14)
+- Handle files (not just directories) in port tree merge glob (#15)
 
 **FreeBSD 11 Source Fixes (os repo):**
 
@@ -134,6 +135,14 @@ source on a FreeBSD 15.0 host:
   on `jail_attach`. If you still see `jail: jail_attach: Operation not
   permitted`, ensure your host supports `jail(8)` and is not itself
   running inside a restricted jail or container.
+
+- **Port build status.** 401 of 415 ports build successfully (96.6%).
+  Known failures:
+  - **Fetch failures** (dead download URLs): `hptcli`, `megacli`, `tw_cli`,
+    `arcconf` (proprietary RAID tools), `trousers` (TPM library)
+  - **Build failures**: `lang/go14` (Go 1.4 bootstrap), `devel/rcs`
+  - **Skipped** (depend on above): `consul`, `go`, `clog`, `gnutls`,
+    `samba45`, `py-smbconf`, `py-wbclient`
 
 If `make bootstrap-pkgs` fails, install the packages manually:
 

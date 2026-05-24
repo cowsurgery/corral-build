@@ -100,6 +100,9 @@ source on a FreeBSD 15.0 host:
   these to errors (#8)
 - `CFLAGS+=-fcommon` - restores pre-C11 tentative definition behavior
   for FreeBSD 11 source that defines globals in headers (#13)
+- Close inherited directory FDs at build startup to prevent
+  `jail_attach: Operation not permitted` from FreeBSD-SA-21:05
+  security hardening (#14)
 
 **FreeBSD 11 Source Fixes (os repo):**
 
@@ -126,10 +129,11 @@ source on a FreeBSD 15.0 host:
   Python 3.6 is available, so it should not need changing for the host.
 
 - **Jail support required.** The build creates poudriere jails to compile
-  ports. Ensure your FreeBSD 15 host supports `jail(8)` - some
-  environments (cloud VMs, containers) may restrict `jail_attach`. If
-  you see `jail: jail_attach: Operation not permitted`, check that your
-  host allows jail creation and attachment.
+  ports. The build system automatically closes inherited directory file
+  descriptors that would trigger FreeBSD-SA-21:05 security restrictions
+  on `jail_attach`. If you still see `jail: jail_attach: Operation not
+  permitted`, ensure your host supports `jail(8)` and is not itself
+  running inside a restricted jail or container.
 
 If `make bootstrap-pkgs` fails, install the packages manually:
 

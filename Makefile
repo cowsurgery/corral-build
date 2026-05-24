@@ -118,6 +118,10 @@ bootstrap-pkgs:
 	pkg install -y sysutils/grub2-pcbsd
 	pkg install -y sysutils/xorriso
 	pkg install -y sysutils/grub2-efi
+	@echo "Installing patched grub2-pcbsd with PLT32 relocation support..."
+	fetch -o /tmp/grub2-pcbsd-plt32.tar.gz https://github.com/cowsurgery/corral-build/releases/download/grub2-pcbsd-2.02q-plt32/grub2-pcbsd-2.02q-freebsd15-plt32.tar.gz
+	tar xzf /tmp/grub2-pcbsd-plt32.tar.gz -C /
+	rm -f /tmp/grub2-pcbsd-plt32.tar.gz
 	pkg install -y devel/git
 	pkg install -y devel/gmake
 	pkg install -y archivers/pigz

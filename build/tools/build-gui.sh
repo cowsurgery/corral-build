@@ -34,7 +34,14 @@ cp node_modules/uuid/v4.js bin/vendors/uuid/v4.js
 cp node_modules/uuid/lib/bytesToUuid.js bin/vendors/uuid/lib/bytesToUuid.js
 cp node_modules/uuid/lib/rng-browser.js bin/vendors/uuid/lib/rng.js
 
-echo "==> Cleaning node_modules"
-rm -rf node_modules
+echo "==> Cleaning build-only modules (keep production deps)"
+rm -rf node_modules/typescript node_modules/postcss node_modules/postcss-cssnext node_modules/postcss-import
+rm -rf node_modules/.package-lock.json
+# Remove deep test/doc directories that cause kernel panics with long paths
+find node_modules -type d -name "test" -exec rm -rf {} + 2>/dev/null || true
+find node_modules -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
+find node_modules -type d -name "example" -exec rm -rf {} + 2>/dev/null || true
+find node_modules -type d -name "examples" -exec rm -rf {} + 2>/dev/null || true
+find node_modules -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
 
 echo "==> GUI build complete"

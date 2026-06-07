@@ -41,14 +41,15 @@ ports += {
     "options": ["OPTIONS_FILE_UNSET+=JAVA"]
 }
 
-ports += {
-    "name": "devel/ds2",
-    "options": [
-        "PRODUCT_VERSION=${VERSION_NUMBER}",
-        "BUILD_TIMESTAMP=${BUILD_TIMESTAMP}",
-        "REVISION=" + ds2_git_rev
-    ]
-}
+# Dropped: devel/ds2 expired 2024-04-06, upstream deprecated and archived
+# ports += {
+#     "name": "devel/ds2",
+#     "options": [
+#         "PRODUCT_VERSION=${VERSION_NUMBER}",
+#         "BUILD_TIMESTAMP=${BUILD_TIMESTAMP}",
+#         "REVISION=" + ds2_git_rev
+#     ]
+# }
 
 ports += {
     "name": "net/mDNSResponder",
@@ -57,12 +58,9 @@ ports += {
     ]
 }
 
-ports += {
-    "name": "dns/mDNSResponder_nss",
-    "options": [
-        "REVISION=" + mdns_git_rev
-    ]
-}
+# TODO: dns/mDNSResponder_nss has CATEGORIES conflict with overlay net/mDNSResponder
+# Needs overlay restructuring to fix. Skipping for now.
+# ports += "dns/mDNSResponder_nss"
 
 ports += "dns/bind-tools"
 ports += "archivers/liblz4"
@@ -72,7 +70,8 @@ ports += "archivers/plzip"
 ports += "comms/lrzsz"
 ports += "sysutils/screen"
 ports += "devel/cdialog"
-ports += "dns/inadyn-mt"
+# Dropped: dns/inadyn-mt expired, dead upstream
+# ports += "dns/inadyn-mt"
 ports += "editors/nano"
 ports += {
     "name": "editors/jed",
@@ -85,13 +84,14 @@ ports += {
     "name": "misc/mc",
     "options": ["OPTIONS_FILE_UNSET+=X11"]
 }
-ports += "net/vblade"
+# Dropped: net/vblade removed from ports tree
+# ports += "net/vblade"
 # Dropped: depends on devel/rcs which fails to build
 # ports += "net-mgmt/clog"
 ports += "net-mgmt/netdata"
 ports += "ftp/lftp"
 ports += {
-    "name": "net/openldap24-sasl-client",
+    "name": "net/openldap25-client",
     "options": ["WITH_OPENSSL_PORT=y"]
 }
 
@@ -111,7 +111,7 @@ ports += {
     ]
 }
 ports += {
-    "name": "lang/python36",
+    "name": "lang/python311",
     "options": [
         "OPTIONS_FILE_UNSET+=NLS",
         "OPTIONS_FILE_SET+=DEBUG"
@@ -139,17 +139,17 @@ ports += {
     ]
 }
 
-ports += "sysutils/e2fsprogs"
-ports += "sysutils/fusefs-ntfs"
+ports += "filesystems/e2fsprogs"
+ports += "filesystems/ntfs"
 ports += "sysutils/smartmontools"
 ports += "net/mosh"
 ports += "devel/py-magic"
-ports += "sysutils/ipfs-go"
+ports += "sysutils/kubo-go"
 #ports += {
 #    "name": "emulators/open-vm-tools-nox11",
 #    "options": ["OPTIONS_FILE_UNSET+=ICU"]
 #}
-ports += "emulators/qemu-utils"
+ports += "emulators/qemu@tools"
 ports += "databases/sqlite3"
 ports += "databases/py-sqlite3"
 ports += "databases/mongodb"
@@ -159,7 +159,8 @@ ports += "devel/py-jsonpointer"
 ports += "devel/py-jsonpatch"
 ports += "devel/py-tzlocal"
 ports += "devel/py-country"
-ports += "comms/py-serial"
+# Dropped: comms/py-serial removed from ports tree
+# ports += "comms/py-serial"
 ports += {
     "name": "math/py-numpy",
     "options": [
@@ -228,7 +229,7 @@ ports += {
 }
 ports += "converters/base64"
 ports += {
-    "name": "emulators/mtools",
+    "name": "filesystems/mtools",
     "options": ["OPTIONS_FILE_UNSET+=X11"]
 }
 # Dropped: proprietary RAID tools with dead download URLs
@@ -237,21 +238,25 @@ ports += {
 ports += "sysutils/sas2ircu"
 
 if PRODUCT != "TrueNAS":
-	ports += "sysutils/areca-cli"
+	# Dropped: sysutils/areca-cli removed from ports tree
+	# ports += "sysutils/areca-cli"
 	# Dropped: proprietary RAID tool with dead download URL
 	# ports += "sysutils/hptcli"
+	pass
 
-ports += "sysutils/ataidle"
+# Dropped: sysutils/ataidle removed from ports tree
+# ports += "sysutils/ataidle"
 ports += {
     "name": "devel/dbus",
     "options": ["OPTIONS_FILE_UNSET+=X11"]
 }
 ports += "devel/libdaemon"
 ports += "sysutils/dmidecode"
-ports += "sysutils/graid5"
+# Dropped: sysutils/graid5 expired, obsolete (use ZFS raidz)
+# ports += "sysutils/graid5"
 ports += "sysutils/tmux"
 ports += {
-    "name": "net/netatalk3",
+    "name": "net/netatalk4",
     "options": [
         "OPTIONS_FILE_SET+=PAM",
         "OPTIONS_FILE_SET+=ACL",
@@ -292,10 +297,11 @@ ports += {
     "options": ["OPTIONS_FILE_SET+=ETCSYMLINK"]
 }
 ports += "ftp/curl"
-ports += {
-    "name": "dns/samba-nsupdate",
-    "options": ["OPTIONS_FILE_SET+=IPV6"]
-}
+# Dropped: dns/samba-nsupdate expired — use dns/bind-tools instead
+# ports += {
+#     "name": "dns/samba-nsupdate",
+#     "options": ["OPTIONS_FILE_SET+=IPV6"]
+# }
 ports += {
     "name": "security/gnutls",
     "options": ["OPTIONS_FILE_UNSET+=TPM"]
@@ -345,7 +351,8 @@ ports += {
     ]
 }
 
-ports += "sysutils/sample"
+# Dropped: sysutils/sample expired, incompatible with newer kernels
+# ports += "sysutils/sample"
 ports += "sysutils/grub2-pcbsd"
 ports += "sysutils/grub2-efi"
 ports += "sysutils/grub2-bhyve"

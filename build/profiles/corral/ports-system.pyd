@@ -58,12 +58,9 @@ ports += {
     ]
 }
 
-ports += {
-    "name": "dns/mDNSResponder_nss",
-    "options": [
-        "REVISION=" + mdns_git_rev
-    ]
-}
+# TODO: dns/mDNSResponder_nss has CATEGORIES conflict with overlay net/mDNSResponder
+# Needs overlay restructuring to fix. Skipping for now.
+# ports += "dns/mDNSResponder_nss"
 
 ports += "dns/bind-tools"
 ports += "archivers/liblz4"

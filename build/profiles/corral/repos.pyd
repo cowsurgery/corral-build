@@ -33,8 +33,15 @@ repos += {
 repos += {
     "name": "ports",
     "path": "ports",
-    "url": "https://github.com/cowsurgery/ports.git",
-    "branch": "branches/2017Q1"
+    "url": "https://github.com/freebsd/freebsd-ports.git",
+    "branch": "main"
+}
+
+repos += {
+    "name": "ports-overlay",
+    "path": "ports-overlay",
+    "url": "https://github.com/cowsurgery/ports-overlay.git",
+    "branch": "main"
 }
 
 repos += {

@@ -26,15 +26,8 @@
 repos += {
     "name": "os",
     "path": "os",
-    "url": "https://github.com/cowsurgery/os.git",
-    "branch": "freebsd11"
-}
-
-repos += {
-    "name": "lib9p",
-    "path": "os/contrib/lib9p",
-    "url": "https://github.com/cowsurgery/lib9p.git",
-    "branch": "master"
+    "url": "https://github.com/freebsd/freebsd-src.git",
+    "branch": "releng/15.0"
 }
 
 repos += {
